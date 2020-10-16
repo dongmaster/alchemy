@@ -9,10 +9,10 @@ defmodule Alchemy.Discord.RateLimits do
   end
 
   # will only match if the ratelimits are present
-  defp parse_headers(%{"X-RateLimit-Remaining" => remaining} = headers) do
+  defp parse_headers(%{"x-ratelimit-remaining" => remaining} = headers) do
     {remaining, _} = Integer.parse(remaining)
-    {reset_time, _} = Integer.parse(headers["X-RateLimit-Reset"])
-    {limit, _} = Integer.parse(headers["X-RateLimit-Limit"])
+    {reset_time, _} = Float.parse(headers["x-ratelimit-reset"])
+    {limit, _} = Integer.parse(headers["x-ratelimit-limit"])
     %RateInfo{limit: limit, remaining: remaining, reset_time: reset_time}
   end
 
@@ -25,7 +25,7 @@ defmodule Alchemy.Discord.RateLimits do
     nil
   end
 
-  def rate_info(%{status_code: 200, headers: h}) do
+  def rate_info(%{status_code: status_code, headers: h}) when status_code in [200, 201] do
     h |> Enum.into(%{}) |> parse_headers
   end
 
